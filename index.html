@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Yukti Silicon — AI-native communication silicon</title>
+
+<style>
+  :root {
+    --bg:#070A0F; --bg-2:#0C121A; --panel:#0F1720; --ink:#EAF0F7; --ink-soft:#93A1B2;
+    --ink-faint:#5A6878; --rule:#1B242F; --signal:#FF9E3D; --dia:#3A4A5A;
+  }
+  :root[data-theme="light"] {
+    --bg:#FBFAF8; --bg-2:#F3F1ED; --panel:#FFFFFF; --ink:#10151C; --ink-soft:#59646F;
+    --ink-faint:#8D97A2; --rule:#E2DFD9; --signal:#C86A0A; --dia:#A9A296;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg:#FBFAF8; --bg-2:#F3F1ED; --panel:#FFFFFF; --ink:#10151C; --ink-soft:#59646F;
+      --ink-faint:#8D97A2; --rule:#E2DFD9; --signal:#C86A0A; --dia:#A9A296;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust:100%; scroll-behavior:smooth; }
+  body {
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Helvetica Neue",Helvetica,Arial,"Segoe UI",system-ui,sans-serif;
+    font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  }
+  .wrap { max-width:1180px; margin:0 auto; padding:0 24px; }
+  @media (min-width:900px){ .wrap{ padding:0 44px; } }
+
+  a { color:var(--signal); text-decoration:none; }
+  a:hover { text-decoration:underline; text-underline-offset:4px; }
+  a:focus-visible { outline:2px solid var(--signal); outline-offset:4px; border-radius:2px; }
+
+  .mono,.eyebrow,.brand,nav ul a,.tag,.node-l,.chip-l,.rm-when {
+    font-family:ui-monospace,"SF Mono",SFMono-Regular,"Cascadia Mono",Menlo,Consolas,monospace;
+  }
+  .eyebrow { font-size:10.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--signal); margin:0 0 14px; }
+  .eyebrow .avail { color:var(--ink-faint); }
+  .eyebrow .avail::before { content:"·"; margin:0 .8em 0 .6em; }
+
+  nav { position:sticky; top:0; z-index:20; background:color-mix(in srgb,var(--bg) 88%,transparent);
+        backdrop-filter:blur(14px); border-bottom:1px solid var(--rule); }
+  nav .wrap { display:flex; align-items:center; justify-content:space-between; height:76px; gap:24px; }
+  .brand { font-size:13px; letter-spacing:.3em; text-transform:uppercase; font-weight:600; color:var(--ink);
+           display:flex; align-items:center; gap:11px; }
+  .brand b { color:var(--signal); font-weight:600; }
+  .mk { width:52px; height:52px; flex:0 0 auto; display:block; overflow:visible; }
+  .mk .mk-s { fill:none; stroke:var(--ink); stroke-width:1; stroke-linecap:square; }
+  .mk .mk-s2 { fill:none; stroke:var(--ink); stroke-width:.6; }
+  .mk .mk-w { fill:none; stroke:var(--signal); stroke-width:.667; stroke-linecap:round; stroke-linejoin:round; }
+  .mk .mk-e { fill:none; stroke:var(--ink); stroke-width:.44; }
+  .mk .mk-f { fill:none; stroke:var(--signal); stroke-width:.44; }
+  .mk .mk-na { fill:var(--signal); }
+  .mk .mk-ns { fill:var(--ink); }
+  nav ul { display:flex; gap:28px; list-style:none; margin:0; padding:0; }
+  nav ul a { font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-soft); }
+  nav ul a:hover { color:var(--ink); text-decoration:none; }
+  @media (max-width:860px){ nav ul{ display:none; } }
+
+  /* hero */
+  .hero { padding:88px 0 72px; display:grid; gap:40px; align-items:center; }
+  @media (min-width:960px){ .hero{ grid-template-columns:minmax(0,1.06fr) minmax(0,.86fr); gap:52px; padding:100px 0 88px; } }
+  .hero-art { opacity:0; animation:fade 1.1s ease .5s forwards; }
+  .hero-art svg { width:100%; height:auto; display:block; overflow:visible; }
+  .iso-f  { fill:var(--panel); }
+  .iso-f2 { fill:var(--bg-2); }
+  .iso-s  { stroke:var(--dia); fill:none; stroke-width:1.6; stroke-linejoin:round; }
+  .iso-a  { stroke:var(--signal); fill:none; stroke-width:1.9; stroke-linejoin:round; }
+  .iso-af { fill:var(--signal); opacity:.10; }
+  .iso-o  { stroke:var(--dia); fill:none; stroke-width:2.3; stroke-linejoin:round; stroke-linecap:round;
+            vector-effect:non-scaling-stroke; }
+  .iso-i  { stroke:var(--dia); fill:none; stroke-width:1;   stroke-linejoin:round; stroke-linecap:round;
+            opacity:.62; vector-effect:non-scaling-stroke; }
+  .iso-aa { stroke:var(--signal); fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round;
+            vector-effect:non-scaling-stroke; }
+  .fig svg, .hero-art svg { overflow:visible; }
+  .hero h1 { font-size:clamp(40px,6vw,74px); line-height:1.06; letter-spacing:-.035em;
+             font-weight:700; margin:0 0 24px; max-width:14ch; text-wrap:balance; }
+  .hero h1 .rise { display:block; overflow:hidden; padding-block:.09em .16em; margin-block:-.09em -.16em; }
+  .hero h1 .rise>span { display:block; transform:translateY(105%); animation:rise .85s cubic-bezier(.16,1,.3,1) forwards; }
+  .hero h1 .rise:nth-child(2)>span { animation-delay:.09s; }
+  @keyframes rise { to { transform:translateY(0); } }
+  .hero h1 em { font-style:normal; color:var(--signal); }
+  .hero .sub { font-size:clamp(17px,1.8vw,20px); color:var(--ink-soft); max-width:52ch; margin:0 0 34px;
+               opacity:0; animation:fade .8s ease .42s forwards; }
+  @keyframes fade { to { opacity:1; } }
+
+  /* sections */
+  section.wrap { padding-top:88px; padding-bottom:88px; border-top:1px solid var(--rule); }
+  @media (max-width:640px){ section.wrap{ padding-top:60px; padding-bottom:60px; } }
+  h2 { font-size:clamp(29px,3.6vw,46px); line-height:1.12; letter-spacing:-.028em;
+       font-weight:700; margin:0; max-width:17ch; text-wrap:balance; }
+  .head { display:grid; gap:16px; align-items:end; margin-bottom:44px; }
+  @media (min-width:900px){ .head{ grid-template-columns:minmax(0,1fr) minmax(0,.9fr); gap:60px; } }
+  .head p { margin:0; color:var(--ink-soft); max-width:44ch; font-size:16.5px; }
+
+  /* svg figures */
+  figure { margin:0; }
+  .fig { background:var(--panel); border:1px solid var(--rule); padding:26px 22px; color:var(--ink-faint); }
+  .fig svg { width:100%; height:auto; display:block; }
+  .s-line { stroke:var(--dia); fill:none; stroke-width:1.7; }
+  .s-box  { stroke:var(--dia); fill:none; stroke-width:1.7; }
+  .s-acc  { stroke:var(--signal); fill:none; stroke-width:2.1; }
+  .s-fill { fill:var(--signal); }
+  .t-lab  { fill:var(--ink-soft); font-family:ui-monospace,Menlo,Consolas,monospace;
+            font-size:11px; letter-spacing:.12em; text-transform:uppercase; }
+  .t-acc  { fill:var(--signal); font-family:ui-monospace,Menlo,Consolas,monospace;
+            font-size:11px; letter-spacing:.12em; text-transform:uppercase; }
+  .t-faint{ fill:var(--ink-soft); font-family:ui-monospace,Menlo,Consolas,monospace;
+            font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; }
+  .fig-cap { margin:14px 0 0; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:10px;
+             letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); }
+
+  /* spec rows */
+  .rows { display:grid; gap:1px; background:var(--rule); border:1px solid var(--rule); margin-top:1px; }
+  @media (min-width:820px){ .rows{ grid-template-columns:repeat(4,1fr); } }
+  .row { background:var(--panel); padding:22px 20px 24px; }
+  .row .tag { font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--signal);
+              display:block; margin-bottom:9px; }
+  .row p { margin:0; font-size:14.5px; color:var(--ink-soft); line-height:1.45; }
+
+  /* applications */
+  .apps { display:grid; gap:1px; background:var(--rule); border:1px solid var(--rule); margin-top:0; }
+  @media (min-width:760px){ .apps{ grid-template-columns:repeat(2,1fr); } }
+  @media (min-width:1080px){ .apps{ grid-template-columns:repeat(4,1fr); } }
+  .app { background:var(--panel); padding:28px 22px 26px; color:var(--ink-faint); }
+  .app svg { width:56px; height:56px; display:block; margin-bottom:18px; }
+  .app h3 { margin:0 0 7px; font-size:16px; color:var(--ink); letter-spacing:-.01em; }
+  .app p { margin:0; font-size:14.5px; color:var(--ink-soft); line-height:1.45; }
+
+  /* roadmap */
+  .rm { background:var(--panel); border:1px solid var(--rule); padding:30px 22px 24px; color:var(--ink-faint); }
+  .rm svg { width:100%; height:auto; display:block; overflow:visible; }
+
+  /* founder */
+  .fdr { display:grid; gap:26px; align-items:start; }
+  @media (min-width:820px){ .fdr{ grid-template-columns:300px minmax(0,1fr); gap:56px; } }
+  .fdr .nm { font-size:24px; letter-spacing:-.02em; font-weight:700; margin:0 0 6px; }
+  .fdr .rl { font-size:15px; color:var(--ink-soft); margin:0; line-height:1.5; }
+  .fdr p.bio { font-size:16.5px; color:var(--ink-soft); margin:0 0 20px; max-width:48ch; }
+  .pills { display:flex; gap:8px; flex-wrap:wrap; }
+  .fdr .afil { margin:0; font-size:14px; color:var(--ink-faint); }
+
+  /* contact */
+  .mailto { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:clamp(20px,3.4vw,34px);
+            letter-spacing:-.02em; color:var(--signal); display:inline-block; margin-top:8px; word-break:break-all; }
+  .mission { border-top:1px solid var(--rule); background:var(--bg-2); padding:64px 0; }
+  .mission p { margin:0; font-size:clamp(24px,3.2vw,40px); line-height:1.12; letter-spacing:-.028em;
+               font-weight:700; color:var(--ink); max-width:20ch; }
+  .mission em { font-style:normal; color:var(--signal); }
+  @media (max-width:640px){ .mission{ padding:46px 0; } }
+
+  footer { border-top:1px solid var(--rule); padding:30px 0 62px;
+           font-family:ui-monospace,Menlo,Consolas,monospace; font-size:10.5px;
+           letter-spacing:.1em; color:var(--ink-faint); line-height:2.1; }
+
+  .reveal { opacity:0; transform:translateY(20px); transition:opacity .7s ease, transform .7s cubic-bezier(.16,1,.3,1); }
+  .reveal.in { opacity:1; transform:none; }
+
+  @media print {
+    :root { --bg:#fff; --bg-2:#fff; --panel:#fff; --ink:#111; --ink-soft:#3A3A3A; --ink-faint:#5A5A5A;
+            --rule:#BBB; --dia:#7A7A7A; --signal:#B4600A; }
+    nav { position:static; }
+    .hero { padding:24px 0 0; }
+    .hero h1 .rise { overflow:visible; }
+    .hero h1 .rise > span { transform:none !important; animation:none !important; }
+    .hero .sub, .hero-art { opacity:1 !important; animation:none !important; }
+    .reveal { opacity:1 !important; transform:none !important; transition:none !important; }
+    section { padding:26px 0; }
+    .eyebrow, h2 { break-after:avoid; }
+    .fig, .rows, .fdr, .head, figure, .mission { break-inside:avoid; }
+    footer { break-before:avoid; padding:16px 0 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero h1 .rise>span { transform:none; animation:none; }
+    .hero .sub,.hero-art { opacity:1; animation:none; }
+    .reveal { opacity:1; transform:none; transition:none; }
+    html { scroll-behavior:auto; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="brand">
+      <svg class="mk" viewBox="-2.9 -2.9 25.8 25.8" role="img" aria-label="Yukti Silicon">
+        <g transform="translate(0,20) scale(1,-1)">
+          <rect class="mk-s" x="0" y="0" width="20" height="20"/>
+          <rect class="mk-s2" x="3.2" y="3.2" width="13.6" height="13.6"/>
+          <g class="mk-s" stroke-width=".75">
+            <path d="M6 20 V22.4 M10 20 V22.4 M14 20 V22.4"/>
+            <path d="M6 0 V-2.4 M10 0 V-2.4 M14 0 V-2.4"/>
+            <path d="M20 6 H22.4 M20 10 H22.4 M20 14 H22.4"/>
+            <path d="M0 6 H-2.4 M0 10 H-2.4 M0 14 H-2.4"/>
+          </g>
+          <g transform="translate(10.35 10) scale(.9) translate(-10 -10)">
+            <path class="mk-f" d="M9.1 10 L11.5 6.6 M9.1 10 L11.5 10 M9.1 10 L11.5 13.4"/>
+            <path class="mk-e" d="M11.5 6.6 L15 8 M11.5 6.6 L15 12 M11.5 10 L15 8 M11.5 10 L15 12 M11.5 13.4 L15 8 M11.5 13.4 L15 12"/>
+            <path class="mk-w" d="M4.3 10 C5.1 13.6 5.9 13.6 6.7 10 C7.5 6.4 8.3 6.4 9.1 10"/>
+            <circle class="mk-na" cx="11.5" cy="6.6" r=".67"/>
+            <circle class="mk-na" cx="11.5" cy="10" r=".67"/>
+            <circle class="mk-na" cx="11.5" cy="13.4" r=".67"/>
+            <circle class="mk-ns" cx="15" cy="8" r=".67"/>
+            <circle class="mk-ns" cx="15" cy="12" r=".67"/>
+          </g>
+        </g>
+      </svg>
+      <span>Yukti<b>·</b>Silicon</span>
+    </div>
+    <ul>
+      <li><a href="#broadcast">Broadcast</a></li>
+      <li><a href="#inference">Inference</a></li>
+      <li><a href="#satellite">Satellite</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="wrap hero">
+  <div>
+    <p class="eyebrow">Fabless semiconductor</p>
+    <h1>
+      <span class="rise"><span>AI-native</span></span>
+      <span class="rise"><span>communication <em>silicon</em>.</span></span>
+    </h1>
+    <p class="sub">Three products: an ATSC 3.0 broadcast modem, an inference engine that runs large
+       language models on the device, and a 5G non-terrestrial satellite modem.</p>
+  </div>
+
+  <div class="hero-art" aria-hidden="true">
+    <svg viewBox="-215 -215 430 330" role="img" aria-label="Isometric technical line drawing of a chip package: substrate with laminate edge and solder-ball rows, die mounted on top with bond wires to the substrate pads, seal ring, and floorplan blocks with the AI engine highlighted.">
+      <g class="iso-aa" opacity=".28">
+      <path d="M-51.6 -109.3 A 60 28 0 0 1 51.6 -109.3"/>
+      <path d="M-79.1 -117.5 A 92 44 0 0 1 79.1 -117.5"/>
+      <path d="M-106.6 -125.2 A 124 59 0 0 1 106.6 -125.2"/>
+      </g>
+      <path class="iso-f" d="M0.0 -111.0 L166.3 -15.0 L0.0 81.0 L-166.3 -15.0 Z"/>
+      <path class="iso-f2" d="M166.3 -15.0 L0.0 81.0 L0.0 96.0 L166.3 0.0 Z"/>
+      <path class="iso-f2" d="M-166.3 -15.0 L0.0 81.0 L0.0 96.0 L-166.3 0.0 Z"/>
+      <g class="iso-i">
+      <path d="M166.3 -10.0 L0.0 86.0"/>
+      <path d="M-166.3 -10.0 L0.0 86.0"/>
+      </g>
+      <path class="iso-o" d="M0.0 -111.0 L166.3 -15.0 L0.0 81.0 L-166.3 -15.0 Z M166.3 -15.0 L0.0 81.0 L0.0 96.0 L166.3 0.0 Z M-166.3 -15.0 L0.0 81.0 L0.0 96.0 L-166.3 0.0 Z"/>
+      <g class="iso-i">
+      <path d="M0.0 -82.0 L6.1 -85.5"/>
+      <path d="M-116.0 -15.0 L-122.1 -11.5"/>
+      <path d="M0.0 -82.0 L-6.1 -85.5"/>
+      <path d="M116.0 -15.0 L122.1 -11.5"/>
+      <path d="M14.5 -73.6 L20.6 -77.1"/>
+      <path d="M-101.5 -6.6 L-107.6 -3.1"/>
+      <path d="M-14.5 -73.6 L-20.6 -77.1"/>
+      <path d="M101.5 -6.6 L107.6 -3.1"/>
+      <path d="M29.0 -65.2 L35.1 -68.8"/>
+      <path d="M-87.0 1.8 L-93.1 5.2"/>
+      <path d="M-29.0 -65.2 L-35.1 -68.8"/>
+      <path d="M87.0 1.8 L93.1 5.2"/>
+      <path d="M43.5 -56.9 L49.6 -60.4"/>
+      <path d="M-72.5 10.1 L-78.6 13.6"/>
+      <path d="M-43.5 -56.9 L-49.6 -60.4"/>
+      <path d="M72.5 10.1 L78.6 13.6"/>
+      <path d="M58.0 -48.5 L64.1 -52.0"/>
+      <path d="M-58.0 18.5 L-64.1 22.0"/>
+      <path d="M-58.0 -48.5 L-64.1 -52.0"/>
+      <path d="M58.0 18.5 L64.1 22.0"/>
+      <path d="M72.5 -40.1 L78.6 -43.6"/>
+      <path d="M-43.5 26.9 L-49.6 30.4"/>
+      <path d="M-72.5 -40.1 L-78.6 -43.6"/>
+      <path d="M43.5 26.9 L49.6 30.4"/>
+      <path d="M87.0 -31.8 L93.1 -35.2"/>
+      <path d="M-29.0 35.2 L-35.1 38.8"/>
+      <path d="M-87.0 -31.8 L-93.1 -35.2"/>
+      <path d="M29.0 35.2 L35.1 38.8"/>
+      <path d="M101.5 -23.4 L107.6 -26.9"/>
+      <path d="M-14.5 43.6 L-20.6 47.1"/>
+      <path d="M-101.5 -23.4 L-107.6 -26.9"/>
+      <path d="M14.5 43.6 L20.6 47.1"/>
+      <path d="M116.0 -15.0 L122.1 -18.5"/>
+      <path d="M0.0 52.0 L-6.1 55.5"/>
+      <path d="M-116.0 -15.0 L-122.1 -18.5"/>
+      <path d="M0.0 52.0 L6.1 55.5"/>
+      </g>
+      <path class="iso-f" d="M0.0 -85.0 L100.5 -27.0 L0.0 31.0 L-100.5 -27.0 Z"/>
+      <path class="iso-f2" d="M100.5 -27.0 L0.0 31.0 L0.0 43.0 L100.5 -15.0 Z"/>
+      <path class="iso-f2" d="M-100.5 -27.0 L0.0 31.0 L0.0 43.0 L-100.5 -15.0 Z"/>
+      <path class="iso-o" d="M0.0 -85.0 L100.5 -27.0 L0.0 31.0 L-100.5 -27.0 Z M100.5 -27.0 L0.0 31.0 L0.0 43.0 L100.5 -15.0 Z M-100.5 -27.0 L0.0 31.0 L0.0 43.0 L-100.5 -15.0 Z"/>
+      <g class="iso-i">
+      <path d="M6.9 -81.0 L17.3 -75.0"/>
+      <path d="M-6.9 -81.0 L-17.3 -75.0"/>
+      <path d="M21.4 -72.7 L31.8 -66.7"/>
+      <path d="M-21.4 -72.7 L-31.8 -66.7"/>
+      <path d="M35.8 -64.3 L46.2 -58.3"/>
+      <path d="M-35.8 -64.3 L-46.2 -58.3"/>
+      <path d="M50.2 -56.0 L60.6 -50.0"/>
+      <path d="M-50.2 -56.0 L-60.6 -50.0"/>
+      <path d="M64.7 -47.7 L75.1 -41.7"/>
+      <path d="M-64.7 -47.7 L-75.1 -41.7"/>
+      <path d="M79.1 -39.3 L89.5 -33.3"/>
+      <path d="M-79.1 -39.3 L-89.5 -33.3"/>
+      <path d="M93.5 -31.0 L103.9 -25.0"/>
+      <path d="M-93.5 -31.0 L-103.9 -25.0"/>
+      </g>
+      <path class="iso-i" d="M0.0 -80.0 L91.8 -27.0 L0.0 26.0 L-91.8 -27.0 Z"/>
+      <path class="iso-i" d="M0.0 -75.0 L83.1 -27.0 L65.8 -17.0 L-17.3 -65.0 Z"/>
+      <path class="iso-i" d="M-24.2 -61.0 L0.0 -47.0 L-34.6 -27.0 L-58.9 -41.0 Z"/>
+      <path class="iso-i" d="M34.6 -27.0 L58.9 -13.0 L24.2 7.0 L0.0 -7.0 Z"/>
+      <path class="iso-i" d="M-65.8 -37.0 L17.3 11.0 L1.7 20.0 L-81.4 -28.0 Z"/>
+      <path class="iso-af" d="M5.2 -44.0 L29.4 -30.0 L-5.2 -10.0 L-29.4 -24.0 Z"/>
+      <path class="iso-aa" d="M5.2 -44.0 L29.4 -30.0 L-5.2 -10.0 L-29.4 -24.0 Z"/>
+      <g class="iso-i" opacity=".5">
+      <path d="M5.2 -70.0 L-8.7 -62.0"/>
+      <path d="M22.5 -60.0 L8.7 -52.0"/>
+      <path d="M39.8 -50.0 L26.0 -42.0"/>
+      <path d="M57.2 -40.0 L43.3 -32.0"/>
+      <path d="M74.5 -30.0 L60.6 -22.0"/>
+      </g>
+      <g class="iso-i" opacity=".8">
+      <ellipse cx="-152.4" cy="11.0" rx="5.4" ry="3"/>
+      <ellipse cx="152.4" cy="11.0" rx="5.4" ry="3"/>
+      <ellipse cx="-124.7" cy="27.0" rx="5.4" ry="3"/>
+      <ellipse cx="124.7" cy="27.0" rx="5.4" ry="3"/>
+      <ellipse cx="-97.0" cy="43.0" rx="5.4" ry="3"/>
+      <ellipse cx="97.0" cy="43.0" rx="5.4" ry="3"/>
+      <ellipse cx="-69.3" cy="59.0" rx="5.4" ry="3"/>
+      <ellipse cx="69.3" cy="59.0" rx="5.4" ry="3"/>
+      <ellipse cx="-41.6" cy="75.0" rx="5.4" ry="3"/>
+      <ellipse cx="41.6" cy="75.0" rx="5.4" ry="3"/>
+      <ellipse cx="-13.9" cy="91.0" rx="5.4" ry="3"/>
+      <ellipse cx="13.9" cy="91.0" rx="5.4" ry="3"/>
+      </g>
+      <circle class="iso-af" cx="0.0" cy="-95.0" r="4"/>
+      <circle class="iso-aa" cx="0.0" cy="-95.0" r="4"/>
+    </svg>
+  </div>
+</div>
+
+<!-- BROADCAST -->
+<section id="broadcast" class="wrap">
+  <p class="eyebrow reveal">Broadcast<span class="avail">Available as soft IP</span></p>
+  <div class="head">
+    <h2 class="reveal">An ATSC 3.0 modem for phones and cars.</h2>
+    <p class="reveal">A complete broadcast physical layer, transmitter and receiver, for next-generation
+       digital television delivered directly to mobile devices.</p>
+  </div>
+
+  <figure class="fig reveal">
+    <svg viewBox="0 0 1200 220" role="img" aria-label="Where the modem sits: a broadcast signal received off air passes through an RF tuner, then the Yukti Silicon ATSC 3.0 modem, then the device's application processor, and plays as video on the screen.">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,1 L9,5 L0,9" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        </marker>
+      </defs>
+
+      <g class="s-line">
+        <line x1="44" y1="132" x2="44" y2="72"/>
+        <line x1="44" y1="72" x2="20" y2="46"/>
+        <line x1="44" y1="72" x2="68" y2="46"/>
+        <path d="M60 96 a26 26 0 0 1 0 40" opacity=".55"/>
+        <path d="M72 86 a38 38 0 0 1 0 60" opacity=".55"/>
+      </g>
+      <text class="t-faint" x="44" y="162" text-anchor="middle">Off air</text>
+
+      <rect class="s-box" x="150" y="40" width="1000" height="164" stroke-dasharray="7 6" opacity=".55"/>
+      <text class="t-faint" x="172" y="70">Handset · vehicle · set-top</text>
+
+      <g class="s-box">
+        <rect x="185" y="98" width="170" height="66"/>
+        <rect x="740" y="98" width="210" height="66"/>
+      </g>
+      <rect class="s-acc" x="415" y="98" width="265" height="66"/>
+
+      <text class="t-lab" x="270" y="136" text-anchor="middle">RF tuner</text>
+      <text class="t-acc" x="547" y="136" text-anchor="middle">ATSC 3.0 modem</text>
+      <text class="t-lab" x="845" y="136" text-anchor="middle">Application processor</text>
+      <text class="t-acc" x="547" y="190" text-anchor="middle">What we supply</text>
+
+      <g class="s-box">
+        <rect x="1005" y="102" width="120" height="60"/>
+        <line x1="1065" y1="162" x2="1065" y2="172"/>
+        <line x1="1043" y1="172" x2="1087" y2="172"/>
+      </g>
+      <path d="M1056 122 L1079 132 L1056 142 Z" fill="currentColor" opacity=".75"/>
+      <text class="t-faint" x="1065" y="190" text-anchor="middle">Video</text>
+
+      <g class="s-line" marker-end="url(#ar)">
+        <line x1="76" y1="131" x2="179" y2="131"/>
+        <line x1="361" y1="131" x2="409" y2="131"/>
+        <line x1="686" y1="131" x2="734" y2="131"/>
+        <line x1="956" y1="131" x2="999" y2="131"/>
+      </g>
+    </svg>
+  </figure>
+
+  <div class="rows">
+    <div class="row reveal"><span class="tag">Standards</span><p>ATSC A/321 bootstrap, A/322 physical layer and A/330 link layer.</p></div>
+    <div class="row reveal"><span class="tag">Reception</span><p>Built for mobile and indoor reception, where the signal is weakest.</p></div>
+    <div class="row reveal"><span class="tag">Delivery</span><p>Licensable soft IP today, on an architecture that carries to silicon.</p></div>
+    <div class="row reveal"><span class="tag">Applications</span><p>Handsets, automotive, set-top and emergency alerting.</p></div>
+  </div>
+</section>
+
+<!-- INFERENCE -->
+<section id="inference" class="wrap">
+  <p class="eyebrow reveal">Inference<span class="avail">In development</span></p>
+  <div class="head">
+    <h2 class="reveal">Language models that run on the device.</h2>
+    <p class="reveal">An inference engine that keeps the whole model on chip and answers without a
+       network, for products that cannot depend on a data centre.</p>
+  </div>
+
+  <figure class="fig reveal">
+    <svg viewBox="0 0 1200 220" role="img" aria-label="Where the inference engine sits: with no network connection, the Yukti Silicon inference engine holds the model in its own memory and plugs into a phone or laptop over USB, which shows the answer.">
+      <g class="s-line" opacity=".38">
+        <line x1="44" y1="132" x2="44" y2="72"/>
+        <line x1="44" y1="72" x2="20" y2="46"/>
+        <line x1="44" y1="72" x2="68" y2="46"/>
+        <path d="M60 96 a26 26 0 0 1 0 40" opacity=".55"/>
+        <path d="M72 86 a38 38 0 0 1 0 60" opacity=".55"/>
+      </g>
+      <line x1="12" y1="146" x2="84" y2="40" stroke="currentColor" stroke-width="2.2" opacity=".8"/>
+      <text class="t-faint" x="44" y="162" text-anchor="middle">No network</text>
+
+      <rect class="s-acc" x="160" y="92" width="420" height="78"/>
+      <text class="t-acc" x="370" y="124" text-anchor="middle">Inference engine</text>
+      <text class="t-faint" x="370" y="148" text-anchor="middle">Model held in on-device memory</text>
+      <text class="t-acc" x="370" y="190" text-anchor="middle">What we supply</text>
+
+      <line class="s-line" x1="580" y1="131" x2="746" y2="131"/>
+      <g class="s-box"><rect x="744" y="121" width="30" height="20"/></g>
+      <text class="t-faint" x="662" y="116" text-anchor="middle">USB</text>
+
+      <rect class="s-box" x="772" y="40" width="378" height="164" stroke-dasharray="7 6" opacity=".55"/>
+      <text class="t-faint" x="794" y="70">Phone · laptop</text>
+
+      <g class="s-box">
+        <rect x="880" y="96" width="170" height="66"/>
+        <path d="M880 162 L858 174 L1072 174 L1050 162"/>
+      </g>
+      <g class="s-line" opacity=".75">
+        <line x1="902" y1="118" x2="1028" y2="118"/>
+        <line x1="902" y1="131" x2="1028" y2="131"/>
+        <line x1="902" y1="144" x2="968" y2="144"/>
+      </g>
+      <text class="t-faint" x="965" y="194" text-anchor="middle">Answer</text>
+    </svg>
+  </figure>
+
+  <div class="rows">
+    <div class="row reveal"><span class="tag">Models</span><p>Dense and mixture-of-experts transformers, one to eight billion parameters.</p></div>
+    <div class="row reveal"><span class="tag">Precision</span><p>Four-bit weights with eight-bit activations and per-group scaling.</p></div>
+    <div class="row reveal"><span class="tag">Architecture</span><p>A RISC-V processor, a systolic matrix engine and its own memory scheduler.</p></div>
+    <div class="row reveal"><span class="tag">Designed for</span><p>Tokens per second per watt, on battery and at the edge.</p></div>
+  </div>
+</section>
+
+<!-- SATELLITE -->
+<section id="satellite" class="wrap">
+  <p class="eyebrow reveal">Satellite<span class="avail">In design</span></p>
+  <div class="head">
+    <h2 class="reveal">A 5G modem for satellite links.</h2>
+    <p class="reveal">A non-terrestrial ground-terminal baseband, built to 3GPP on the same OFDM
+       datapath as our terrestrial modems.</p>
+  </div>
+
+  <figure class="fig reveal">
+    <svg viewBox="0 0 1200 220" role="img" aria-label="Where the satellite modem sits: a downlink from a spacecraft reaches a dish, feeds the terminal's RF front end, then the Yukti Silicon 5G non-terrestrial modem, which delivers internet access over Ethernet or Wi-Fi.">
+      <defs>
+        <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,1 L9,5 L0,9" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        </marker>
+      </defs>
+
+      <g class="s-box">
+        <rect x="44" y="14" width="30" height="22"/>
+        <rect x="10" y="18" width="26" height="14"/>
+        <rect x="82" y="18" width="26" height="14"/>
+      </g>
+      <g class="s-line" opacity=".7">
+        <line x1="36" y1="25" x2="44" y2="25"/>
+        <line x1="74" y1="25" x2="82" y2="25"/>
+      </g>
+      <line class="s-line" marker-end="url(#ar3)" x1="59" y1="40" x2="59" y2="84" stroke-dasharray="6 5" opacity=".75"/>
+
+      <path class="s-line" d="M31 92 A 30 30 0 0 0 87 92"/>
+      <line class="s-line" x1="59" y1="106" x2="59" y2="131"/>
+      <text class="t-faint" x="59" y="162" text-anchor="middle">Downlink</text>
+      <text class="t-faint" x="1150" y="136" text-anchor="middle">Internet</text>
+
+      <rect class="s-box" x="150" y="40" width="870" height="164" stroke-dasharray="7 6" opacity=".55"/>
+      <text class="t-faint" x="172" y="70">Ground terminal</text>
+
+      <g class="s-box">
+        <rect x="195" y="98" width="190" height="66"/>
+        <rect x="805" y="98" width="175" height="66"/>
+      </g>
+      <rect class="s-acc" x="445" y="98" width="300" height="66"/>
+
+      <text class="t-lab" x="290" y="136" text-anchor="middle">RF front end</text>
+      <text class="t-acc" x="595" y="136" text-anchor="middle">5G NTN modem</text>
+      <text class="t-lab" x="892" y="136" text-anchor="middle">Ethernet · Wi-Fi</text>
+      <text class="t-acc" x="595" y="190" text-anchor="middle">What we supply</text>
+
+      <g class="s-line" marker-end="url(#ar3)">
+        <line x1="71" y1="131" x2="189" y2="131"/>
+        <line x1="391" y1="131" x2="439" y2="131"/>
+        <line x1="751" y1="131" x2="799" y2="131"/>
+        <line x1="986" y1="131" x2="1104" y2="131"/>
+      </g>
+    </svg>
+  </figure>
+
+  <div class="rows">
+    <div class="row reveal"><span class="tag">Standards</span><p>3GPP Release 17 and 18 non-terrestrial networks.</p></div>
+    <div class="row reveal"><span class="tag">Waveform</span><p>OFDM with adaptive coding and modulation, QPSK through 1024-QAM.</p></div>
+    <div class="row reveal"><span class="tag">Segment</span><p>Ground-terminal baseband, transmit and receive.</p></div>
+    <div class="row reveal"><span class="tag">Applications</span><p>Satellite broadband, and government and defence ground segment.</p></div>
+  </div>
+</section>
+
+<!-- FOUNDER -->
+<section id="founder" class="wrap">
+  <p class="eyebrow reveal">Founder</p>
+  <div class="fdr">
+    <div class="reveal">
+      <p class="nm">Dr. Rajshekhar V. Bhat</p>
+      <p class="rl">Founder<br>Assistant Professor, IIT Dharwad</p>
+    </div>
+    <div class="reveal">
+      <p class="bio">Communication systems, programmable radio architectures and semiconductor design.</p>
+      <p class="afil">Contributor to ITU-T standardisation</p>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="wrap">
+  <p class="eyebrow reveal">Contact</p>
+  <a class="mailto reveal" href="mailto:contact@yuktisilicon.com">contact@yuktisilicon.com</a>
+</section>
+
+<div class="mission">
+  <div class="wrap">
+    <p class="reveal">Building <em>sovereign silicon</em> for India.</p>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    Yukti Silicon Private Limited · Dharwad, Karnataka, India
+  </div>
+</footer>
+
+<script>
+(function () {
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var items = document.querySelectorAll('.reveal');
+  if (reduce || !('IntersectionObserver' in window)) {
+    items.forEach(function (el) { el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e, i) {
+        if (e.isIntersecting) { var el = e.target;
+          setTimeout(function () { el.classList.add('in'); }, (i % 4) * 70); io.unobserve(el); }
+      });
+    }, { rootMargin: '0px 0px -12% 0px' });
+    items.forEach(function (el) { io.observe(el); });
+  }
+
+})();
+</script>
+
+</body>
+</html>
